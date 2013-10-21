@@ -44,13 +44,13 @@
     
     @weakify(self);
     
-    RACSignal *postsRemainingSignal = [[RACObserve(self.collectionView, contentOffset) distinctUntilChanged] map:^(id value) {
+    RACSignal *postsRemainingSignal = [[RACObserve(self.collectionView, contentOffset) map:^(id value) {
         // The value returned from the signal will be an NSValue
         CGPoint offset = [value CGPointValue];
         NSNumber *postsPassed = @(floorf(offset.x/320) + 1);
         
         return @([self.postQueue.posts count] - [postsPassed integerValue]);
-    }];
+    }] distinctUntilChanged];
     
     // Load more when less than 4 remaining
     [postsRemainingSignal subscribeNext:^(id x) {
