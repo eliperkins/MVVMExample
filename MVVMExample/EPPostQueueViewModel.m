@@ -16,22 +16,21 @@
     self = [super init];
     if (self) {
         self.posts = [[NSMutableArray alloc] init];
+        
+        self.loadPostsCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
+            return [RACSignal startEagerlyWithScheduler:[RACScheduler scheduler] block:^(id<RACSubscriber> subscriber) {
+                [[EPHTTPClient sharedClient] getGlobalTimelinePostsWithSuccess:^(NSURLSessionDataTask *task, id responseObject) {
+                    [self.posts addObjectsFromArray:responseObject];
+                    [subscriber sendNext:responseObject];
+                    [subscriber sendCompleted];
+                } failure:^(NSURLSessionDataTask *task, NSError *error) {
+                    [subscriber sendError:error];
+                }];
+            }];
+        }];
     }
     return self;
 }
 
-- (RACCommand *)loadPostsCommand {
-    return [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
-        return [RACSignal startEagerlyWithScheduler:[RACScheduler scheduler] block:^(id<RACSubscriber> subscriber) {
-           [[EPHTTPClient sharedClient] getGlobalTimelinePostsWithSuccess:^(NSURLSessionDataTask *task, id responseObject) {
-               [self.posts addObjectsFromArray:responseObject];
-               [subscriber sendNext:responseObject];
-               [subscriber sendCompleted];
-           } failure:^(NSURLSessionDataTask *task, NSError *error) {
-               [subscriber sendError:error];
-           }];
-        }];
-    }];
-}
 
 @end
