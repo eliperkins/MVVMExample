@@ -18,7 +18,7 @@
         self.posts = [[NSMutableArray alloc] init];
         
         self.loadPostsCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
-            return [RACSignal startEagerlyWithScheduler:[RACScheduler scheduler] block:^(id<RACSubscriber> subscriber) {
+            RACSignal *networkSignal = [[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {\
                 [[EPHTTPClient sharedClient] getGlobalTimelinePostsWithSuccess:^(NSURLSessionDataTask *task, id responseObject) {
                     [self.posts addObjectsFromArray:responseObject];
                     [subscriber sendNext:responseObject];
@@ -26,11 +26,24 @@
                 } failure:^(NSURLSessionDataTask *task, NSError *error) {
                     [subscriber sendError:error];
                 }];
-            }];
+
+                return nil;
+            }] setNameWithFormat:@"EPPostQueueViewModel loadPostsCommandSignal"];
+            
+            return networkSignal;
+        }];
+        
+        // Create a subject to send view values to
+        self.postsRemainingSubject = [RACSubject subject];
+        
+        // Load more posts when less than 4 posts remain
+        [self.postsRemainingSubject subscribeNext:^(id x) {
+            if ([x integerValue] < 4) {
+                [self.loadPostsCommand execute:nil];
+            }
         }];
     }
     return self;
 }
-
 
 @end

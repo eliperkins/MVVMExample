@@ -44,6 +44,14 @@
     
     @weakify(self);
     
+    // When the load command is executed, update our view accordingly
+    [self.postQueue.loadPostsCommand.executionSignals subscribeNext:^(id signal) {
+        [signal subscribeCompleted:^{
+            @strongify(self);
+            [self.collectionView reloadData];
+        }];
+    }];
+
     RACSignal *postsRemainingSignal = [[RACObserve(self.collectionView, contentOffset) map:^(id value) {
         // The value returned from the signal will be an NSValue
         CGPoint offset = [value CGPointValue];
@@ -52,16 +60,12 @@
         return @([self.postQueue.posts count] - [postsPassed integerValue]);
     }] distinctUntilChanged];
     
-    // Load more when less than 4 remaining
+    // Send the values of the posts to the view model
     [postsRemainingSignal subscribeNext:^(id x) {
-        if ([x intValue] < 4) {
-            [[self.postQueue.loadPostsCommand execute:nil] subscribeNext:^(id x) {
-                @strongify(self);
-                [self.collectionView reloadData];
-            }];
-        }
+        [self.postQueue.postsRemainingSubject sendNext:x];
     }];
 }
+
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return [self.postQueue.posts count];
