@@ -18,7 +18,7 @@
         self.posts = [[NSMutableArray alloc] init];
         
         self.loadPostsCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
-            return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+            RACSignal *networkSignal = [[RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {\
                 [[EPHTTPClient sharedClient] getGlobalTimelinePostsWithSuccess:^(NSURLSessionDataTask *task, id responseObject) {
                     [self.posts addObjectsFromArray:responseObject];
                     [subscriber sendNext:responseObject];
@@ -28,7 +28,9 @@
                 }];
 
                 return nil;
-            }];
+            }] setNameWithFormat:@"EPPostQueueViewModel loadPostsCommandSignal"];
+            
+            return networkSignal;
         }];
         
         // Create a subject to send view values to
@@ -43,6 +45,5 @@
     }
     return self;
 }
-
 
 @end
