@@ -44,6 +44,14 @@
     
     @weakify(self);
     
+    // When the load command is executed, update our view accordingly
+    [self.postQueue.loadPostsCommand.executionSignals subscribeNext:^(id signal) {
+        [signal subscribeCompleted:^{
+            @strongify(self);
+            [self.collectionView reloadData];
+        }];
+    }];
+
     RACSignal *postsRemainingSignal = [[RACObserve(self.collectionView, contentOffset) map:^(id value) {
         // The value returned from the signal will be an NSValue
         CGPoint offset = [value CGPointValue];
@@ -56,13 +64,8 @@
     [postsRemainingSignal subscribeNext:^(id x) {
         [self.postQueue.postsRemainingSubject sendNext:x];
     }];
-    
-    // When the load command is executed, update our view accordingly
-    [self.postQueue.loadPostsCommand.executionSignals subscribeNext:^(id x) {
-        @strongify(self);
-        [self.collectionView reloadData];
-    }];
 }
+
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return [self.postQueue.posts count];
