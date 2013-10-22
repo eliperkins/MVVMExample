@@ -18,7 +18,7 @@
         self.posts = [[NSMutableArray alloc] init];
         
         self.loadPostsCommand = [[RACCommand alloc] initWithSignalBlock:^RACSignal *(id input) {
-            return [RACSignal startEagerlyWithScheduler:[RACScheduler scheduler] block:^(id<RACSubscriber> subscriber) {
+            return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
                 [[EPHTTPClient sharedClient] getGlobalTimelinePostsWithSuccess:^(NSURLSessionDataTask *task, id responseObject) {
                     [self.posts addObjectsFromArray:responseObject];
                     [subscriber sendNext:responseObject];
@@ -26,7 +26,17 @@
                 } failure:^(NSURLSessionDataTask *task, NSError *error) {
                     [subscriber sendError:error];
                 }];
+
+                return nil;
             }];
+        }];
+        
+        self.postsRemainingSubject = [RACSubject subject];
+        
+        [self.postsRemainingSubject subscribeNext:^(id x) {
+            if ([x integerValue] < 4) {
+                [self.loadPostsCommand execute:nil];
+            }
         }];
     }
     return self;

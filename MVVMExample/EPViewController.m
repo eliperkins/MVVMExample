@@ -54,12 +54,12 @@
     
     // Load more when less than 4 remaining
     [postsRemainingSignal subscribeNext:^(id x) {
-        if ([x intValue] < 4) {
-            [[self.postQueue.loadPostsCommand execute:nil] subscribeNext:^(id x) {
-                @strongify(self);
-                [self.collectionView reloadData];
-            }];
-        }
+        [self.postQueue.postsRemainingSubject sendNext:x];
+    }];
+    
+    [self.postQueue.loadPostsCommand.executionSignals subscribeNext:^(id x) {
+        @strongify(self);
+        [self.collectionView reloadData];
     }];
 }
 
