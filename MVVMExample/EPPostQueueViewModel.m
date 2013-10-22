@@ -31,8 +31,10 @@
             }];
         }];
         
+        // Create a subject to send view values to
         self.postsRemainingSubject = [RACSubject subject];
         
+        // Load more posts when less than 4 posts remain
         [self.postsRemainingSubject subscribeNext:^(id x) {
             if ([x integerValue] < 4) {
                 [self.loadPostsCommand execute:nil];

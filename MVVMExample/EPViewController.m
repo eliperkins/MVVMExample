@@ -52,11 +52,12 @@
         return @([self.postQueue.posts count] - [postsPassed integerValue]);
     }] distinctUntilChanged];
     
-    // Load more when less than 4 remaining
+    // Send the values of the posts to the view model
     [postsRemainingSignal subscribeNext:^(id x) {
         [self.postQueue.postsRemainingSubject sendNext:x];
     }];
     
+    // When the load command is executed, update our view accordingly
     [self.postQueue.loadPostsCommand.executionSignals subscribeNext:^(id x) {
         @strongify(self);
         [self.collectionView reloadData];
