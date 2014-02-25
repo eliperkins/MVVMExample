@@ -60,9 +60,9 @@
         return @([self.postQueue.posts count] - [postsPassed integerValue]);
     }] distinctUntilChanged];
     
-    // Send the values of the posts to the view model
+    // Assign the value of the posts remaining to the view model
     [postsRemainingSignal subscribeNext:^(id x) {
-        [self.postQueue.postsRemainingSubject sendNext:x];
+        self.postQueue.postsRemaining = x;
     }];
 }
 

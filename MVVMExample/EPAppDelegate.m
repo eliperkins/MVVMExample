@@ -7,15 +7,12 @@
 //
 
 #import "EPAppDelegate.h"
-#import <AFHTTPRequestOperationLogger/AFHTTPRequestOperationLogger.h>
 
 @implementation EPAppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
-    [[AFHTTPRequestOperationLogger sharedLogger] setLevel:AFLoggerLevelInfo];
-    [[AFHTTPRequestOperationLogger sharedLogger] startLogging] ;
 
     return YES;
 }

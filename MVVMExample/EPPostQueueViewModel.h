@@ -14,6 +14,6 @@
 
 @property (nonatomic, strong) RACCommand *loadPostsCommand;
 
-@property (nonatomic, strong) RACSubject *postsRemainingSubject;
+@property (nonatomic, strong) NSNumber *postsRemaining;
 
 @end
