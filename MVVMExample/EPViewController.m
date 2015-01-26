@@ -3,17 +3,18 @@
 //  MVVMExample
 //
 //  Created by Eli Perkins on 10/21/13.
-//  Copyright (c) 2013 One Mighty Roar. All rights reserved.
+//  Copyright (c) 2013 Eli Perkins. All rights reserved.
 //
 
 #import "EPViewController.h"
 
 #import "EPPost.h"
 #import "EPPostQueueViewModel.h"
+#import <ReactiveCocoa/ReactiveCocoa.h>
 
 @interface EPViewController ()
 
-@property (nonatomic, strong) EPPostQueueViewModel *postQueue;
+@property (nonatomic, strong) EPPostQueueViewModel *viewModel;
 
 @end
 
@@ -22,7 +23,7 @@
 - (id)initWithCoder:(NSCoder *)aDecoder {
     self = [super initWithCoder:aDecoder];
     if (self) {
-        self.postQueue = [[EPPostQueueViewModel alloc] init];
+        self.viewModel = [[EPPostQueueViewModel alloc] init];
     }
     return self;
 }
@@ -43,32 +44,26 @@
     [super viewWillAppear:animated];
     
     @weakify(self);
-    
-    // When the load command is executed, update our view accordingly
-    [self.postQueue.loadPostsCommand.executionSignals subscribeNext:^(id signal) {
-        [signal subscribeCompleted:^{
-            @strongify(self);
-            [self.collectionView reloadData];
-        }];
+    [RACObserve(self.viewModel, posts) subscribeNext:^(id _) {
+        @strongify(self);
+        [self.collectionView reloadData];
     }];
-
-    RACSignal *postsRemainingSignal = [[RACObserve(self.collectionView, contentOffset) map:^(id value) {
-        // The value returned from the signal will be an NSValue
-        CGPoint offset = [value CGPointValue];
-        NSNumber *postsPassed = @(floorf(offset.x/320) + 1);
-        
-        return @([self.postQueue.posts count] - [postsPassed integerValue]);
-    }] distinctUntilChanged];
     
-    // Assign the value of the posts remaining to the view model
-    [postsRemainingSignal subscribeNext:^(id x) {
-        self.postQueue.postsRemaining = x;
-    }];
+    RACSignal *indexSignal = [[RACObserve(self.collectionView, contentOffset)
+        map:^(NSValue *value) {
+            CGPoint offset = value.CGPointValue;
+            NSNumber *postsPassed = @(floorf(offset.x/320) + 1);
+            
+            return postsPassed;
+        }]
+        distinctUntilChanged];
+    
+    RAC(self.viewModel, viewedPostIndex) = indexSignal;
 }
 
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return [self.postQueue.posts count];
+    return [self.viewModel.posts count];
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -80,10 +75,10 @@
 }
 
 - (void)customizeCell:(UICollectionViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
-    EPPost *post = [self.postQueue.posts objectAtIndex:indexPath.row];
+    EPPost *post = [self.viewModel.posts objectAtIndex:indexPath.row];
+    // Don't judge me...
     UILabel *label = (UILabel *)[cell viewWithTag:999];
     label.text = post.text;
 }
-
 
 @end

@@ -13,8 +13,4 @@
 #ifdef __OBJC__
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
-#import <Mantle/Mantle.h>
-#import <ReactiveCocoa/ReactiveCocoa.h>
-#import <AFNetworking/AFNetworking.h>
-#import <EXTScope.h>
 #endif

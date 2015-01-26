@@ -3,7 +3,7 @@
 //  MVVMExample
 //
 //  Created by Eli Perkins on 10/21/13.
-//  Copyright (c) 2013 One Mighty Roar. All rights reserved.
+//  Copyright (c) 2013 Eli Perkins. All rights reserved.
 //
 
 #import "EPHTTPClient.h"
@@ -23,8 +23,8 @@ static NSString * const EPAppDotNetAPIBaseURLString = @"https://alpha-api.app.ne
     return _sharedClient;
 }
 
-- (void)getGlobalTimelinePostsWithSuccess:(EPHTTPClientSuccess)success failure:(EPHTTPClientFailure)failure {
-    [self GET:@"stream/0/posts/stream/global" parameters:nil success:^(NSURLSessionDataTask *task, id responseObject) {
+- (NSURLSessionDataTask *)getGlobalTimelinePostsWithSuccess:(EPHTTPClientSuccess)success failure:(EPHTTPClientFailure)failure {
+    return [self GET:@"stream/0/posts/stream/global" parameters:nil success:^(NSURLSessionDataTask *task, id responseObject) {
         NSArray *postDictsFromResponse = [responseObject valueForKeyPath:@"data"];
         
         NSMutableArray *mutablePosts = [NSMutableArray arrayWithCapacity:[postDictsFromResponse count]];
